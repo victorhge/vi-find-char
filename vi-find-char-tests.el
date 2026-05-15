@@ -72,8 +72,31 @@
       (call-interactively 'vi-find-char-go-forward))
     (should (= vi-find-char-last-char ?w))))
 
-;;; 2. Search for Special Characters
+;;; 2. Adjacent Character Tests
 
+(ert-deftest vi-find-char-test-forward-point-just-before-target ()
+  "Test forward search when point is immediately before the target character."
+  (with-temp-buffer
+    (insert "hello")
+    (goto-char 5)  ; Point just before 'o' (char-after is ?o)
+    (cl-letf (((symbol-function 'read-key)
+               (lambda (&rest _) ?o)))
+      (call-interactively 'vi-find-char-go-forward))
+    (should (= (char-before (point)) ?o))
+    (should (= (point) 6))))
+
+(ert-deftest vi-find-char-test-backward-point-just-after-target ()
+  "Test backward search when point is immediately after the target character."
+  (with-temp-buffer
+    (insert "hello")
+    (goto-char 2)  ; Point just after 'h' (char-before is ?h)
+    (cl-letf (((symbol-function 'read-key)
+               (lambda (&rest _) ?h)))
+      (call-interactively 'vi-find-char-go-backword))
+    (should (= (char-after (point)) ?h))
+    (should (= (point) 1))))
+
+;;; 3. Search for Special Characters
 (ert-deftest vi-find-char-test-search-for-dot ()
   "Test searching for plain dot character."
   (with-temp-buffer
@@ -96,7 +119,7 @@
     (should (= (char-before (point)) ?,))
     (should (= (point) 5))))
 
-;;; 3. Repeat Tests
+;;; 4. Repeat Tests
 
 (ert-deftest vi-find-char-test-repeat-forward-with-ctrl-dot ()
   "Test repeat forward with C-. key event."
@@ -172,7 +195,7 @@
       (call-interactively 'vi-find-char-go-forward))
     (should (= (point) 3))))  ; Backward to first 'c'
 
-;;; 4. Boundary Tests
+;;; 5. Boundary Tests
 
 (ert-deftest vi-find-char-test-forward-at-eob ()
   "Test forward search at end of buffer signals error."
@@ -212,7 +235,7 @@
     (should (= (point) 1))
     (should (= (char-after (point)) ?h))))
 
-;;; 5. State Tests
+;;; 6. State Tests
 
 (ert-deftest vi-find-char-test-forward-sets-direction-flag ()
   "Test that forward command sets direction flag to t."
@@ -251,7 +274,7 @@
       (goto-char (point-min))
       (should (= vi-find-char-last-char saved-char)))))
 
-;;; 6. Mark Deactivation Tests
+;;; 7. Mark Deactivation Tests
 
 (ert-deftest vi-find-char-test-mark-deactivated-on-success ()
   "Test that mark is deactivated after successful search."
@@ -267,7 +290,7 @@
       (call-interactively 'vi-find-char-go-forward))
     (should-not mark-active)))  ; Mark should be deactivated
 
-;;; 7. Mark Popup Tests
+;;; 8. Mark Popup Tests
 
 (ert-deftest vi-find-char-test-mark-active-state ()
   "Test that mark-active is nil after successful search."
