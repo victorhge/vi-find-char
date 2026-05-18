@@ -123,13 +123,15 @@ BOUNDARY-ERROR is signaled if at boundary."
 
 (defun vi-find-char-go-forward ()
   "Search forward for a character.  Prompt for character input.
-At the prompt, press C-.  or C-, to repeat the last search."
+At the prompt, press `vi-find-char-forward-key' or
+`vi-find-char-backward-key' to repeat the last search."
   (interactive)
   (vi-find-char--read-and-search t "Find forward: " #'eobp 'end-of-buffer))
 
 (defun vi-find-char-go-backword ()
   "Search backward for a character.  Prompt for character input.
-At the prompt, press C-.  or C-, to repeat the last search."
+At the prompt, press `vi-find-char-forward-key' or
+`vi-find-char-backward-key' to repeat the last search."
   (interactive)
   (vi-find-char--read-and-search nil "Find backward: " #'bobp 'beginning-of-buffer))
 

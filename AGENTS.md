@@ -27,10 +27,10 @@ emacs --batch --eval "(checkdoc-file \"vi-find-char.el\")"
 
 The package has two layers:
 
-1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backword`) — bound globally to `C-.` and `C-,`. They set `vi-find-char-forward` and prompt for input using `read-key`. The prompt accepts:
+1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backword`) — bound globally to keys controlled by `vi-find-char-forward-key` and `vi-find-char-backward-key` (`defcustom`, default `C-.` and `C-,`). They set `vi-find-char-forward` and prompt for input using `read-key`. The prompt accepts:
    - Regular characters (including `.` and `,`): search for that character
-   - `C-.`: repeat last search forward
-   - `C-,`: repeat last search backward
+   - forward key (`vi-find-char-forward-key`): repeat last search forward
+   - backward key (`vi-find-char-backward-key`): repeat last search backward
    - `C-g`: cancel
    The `condition-case` wrapper handles cancellation gracefully.
 
@@ -38,7 +38,7 @@ The package has two layers:
 
 State is kept in two variables: `vi-find-char-last-char` (global, persists across invocations for repeat) and `vi-find-char-forward` (buffer-local, tracks direction).
 
-The repeat mechanism is triggered at the prompt: pressing `C-.` repeats forward, `C-,` repeats backward, allowing seamless direction switching. Plain `.` and `,` characters can be searched for normally.
+The repeat mechanism is triggered at the prompt: pressing the forward key repeats forward, the backward key repeats backward, allowing seamless direction switching. The repeat keys always mirror `vi-find-char-forward-key` and `vi-find-char-backward-key`.
 
 ## Testing
 

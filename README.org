@@ -4,20 +4,20 @@ character navigation.
 
 ** Overview
 =vi-find-char= provides a fast way to jump to the next or previous
-occurrence of any character in your buffer. Press =C-.= or =C-,=, type a
-character, and point jumps immediately. Press =C-.= or `C-,' twice to
-continue searching in that direction without being prompted again.
+occurrence of any character in your buffer. Press the forward key (default
+=C-.=) or backward key (default =C-,=), type a character, and point jumps
+immediately.  Press the same key again to continue searching in that
+direction without being prompted again.  Both keys are configurable; see
+the Customization section.
 
 ** Features
-- *Simple keybindings*: =C-.= for forward search, =C-,= for backward
-  search
-- *Minibuffer prompts*: Clear visual feedback showing search direction
-- *Smart repeat*: Press =C-.= or =C-,= again to repeat the last search
+- *Two keystrokes*: Jump to target character with two keystrokes
+- *Configurable keybindings*: Default =C-.= for forward search, =C-,= for
+  backward search; customize via =vi-find-char-forward-key= and
+  =vi-find-char-backward-key=
+- *Smart repeat*: Press the forward or backward key again to repeat the last search
 - *Direction switching*: Alternate between forward and backward
   seamlessly
-- *Mark deactivation*: Automatically deactivates the mark after
-  successful search
-- *Lightweight*: Single file, no dependencies, ~100 lines of code
 
 ** Installation
 *** Manual Installation
@@ -35,6 +35,8 @@ continue searching in that direction without being prompted again.
 #+end_src
 
 ** Usage
+The examples below use the default keys (=C-.= for forward, =C-,= for backward).
+
 *** Basic Search
 - Press =C-.= to search forward for a character
 - At the prompt "Find forward:", type any character
@@ -47,12 +49,13 @@ continue searching in that direction without being prompted again.
 - Point jumps to the previous occurrence of that character
 
 *** Repeat Search
-- Press =C-.= or =C-,= to bring up the prompt
-- At the prompt, press =C-.= or =C-,= again to repeat:
-  - =C-.= repeats the last search forward
-  - =C-,= repeats the last search backward
+- Press the forward or backward key to bring up the prompt
+- At the prompt, press the forward or backward key again to repeat:
+  - Forward key repeats the last search forward
+  - Backward key repeats the last search backward
 - You can alternate between forward and backward seamlessly
-- Plain =.= and =,= characters can be searched for normally
+- Plain =.= and =,= characters can be searched for normally (when those
+  are not your configured keys)
 
 *** Examples
 #+begin_example
@@ -74,44 +77,63 @@ Text: "The quick brown fox jumps over the lazy dog"
    → Searches for the '.' character in the text
 #+end_example
 
-** Keybindings
-| Key   | Command                    | Description                |
-|-------+----------------------------+----------------------------|
-| =C-.= | =vi-find-char-go-forward=  | Search forward for a char  |
-| =C-,= | =vi-find-char-go-backword= | Search backward for a char |
-
-*Note*: These keybindings are set globally when the package is loaded.
-
 ** Customization
 *** Custom Keybindings
-If you prefer different keybindings, you can change them in your init
-file:
+If you prefer different keybindings, customize
+=vi-find-char-forward-key= and =vi-find-char-backward-key=:
 
 #+begin_src elisp
-(require 'vi-find-char)
-
-;; Unbind default keys
-(keymap-global-unset "C-.")
-(keymap-global-unset "C-,")
-
-;; Set your preferred keys
-(keymap-global-set "M-f" 'vi-find-char-go-forward)
-(keymap-global-set "M-b" 'vi-find-char-go-backword)
+(use-package vi-find-char
+  :load-path "path/to/vi-find-char"
+  :custom
+  (vi-find-char-forward-key  "M-.")
+  (vi-find-char-backward-key "M-,"))
 #+end_src
 
+Or after loading:
+
+#+begin_src elisp
+(setopt vi-find-char-forward-key  "M-.")
+(setopt vi-find-char-backward-key "M-,")
+#+end_src
+
+You can also use =M-x customize-group RET vi-find-char RET= to change
+the keys interactively.  The old binding is removed automatically when
+you apply a new key.
+
+*** Single-stroke keys required
+This package only supports single-event key sequences (one keystroke, no
+chords like =C-c .=).  This is a fundamental constraint: the repeat
+detection at the prompt reads one key at a time via =read-key=.
+
+This also means *finding a suitable key pair is the hardest part of using
+this package*.  If you cannot bind both the forward and backward commands
+to single, easy-to-reach keys, the package offers no advantage over
+=C-s/C-r= (isearch).  The default =C-.= and =C-,= conflict with
+=flyspell-mode=; other common single-stroke keys may conflict with
+=iedit=, =xref=, or major-mode bindings.
+
+Suggested pairs to evaluate against your own setup:
+
+| Forward | Backward | Common conflict      |
+|---------+----------+----------------------|
+| =C-.=   | =C-,=    | =flyspell-mode=      |
+| =C-'=   | =C-;=    | =C-;= is =iedit=     |
+| =C-'=   | =M-'=    | usually free         |
+
 ** Comparison with Similar Features
-*** vs. =C-s <char> RET=
-- *vi-find-char*: =C-. <char>= (no need to press RET)
+*** vs. =C-s <char> RET=
 - *isearch*: =C-s <char> RET=
+- *vi-find-char*: =C-. <char>= (no need to press RET)
 - Saves one keystroke per search
 
-*** vs. Vi's =f= command
+*** vs. Vi's =f= command
 - *Vi*: =f<char>= finds forward, =;= repeats, =,= reverses
 - *vi-find-char*: =C-.<char>= finds forward, =C-.= repeats, =C-,=
   reverses
 - More Emacs-like with explicit forward/backward keys
 
-*** vs. =avy=, =ace-jump-mode=
+*** vs. =avy=, =ace-jump-mode=
 - Those packages provide visual overlays for multi-step jumps
 - =vi-find-char= is simpler: just type the character and go
 - Better for nearby targets; =avy= better for distant targets
@@ -119,16 +141,18 @@ file:
 ** Implementation Details
 The package uses a two-layer architecture:
 
-1. *Entry commands* check if the previous command was a vi-find-char
-   command (via =last-command=)
-   - If yes: repeat the last search in the current direction
-   - If no: prompt for a new character using =read-char=
-2. *Search core* performs =search-forward= or =search-backward= based on
-   the direction flag
+1. *Entry commands* (=vi-find-char-go-forward=, =vi-find-char-go-backword=)
+   prompt for input using =read-key=.  At the prompt:
+   - Pressing the configured forward or backward key repeats the last search
+   - Any other character triggers a new search for that character
+   - =C-g= cancels (handled via =condition-case=)
+2. *Search core* (=vi-find-char-search=) performs =search-forward= or
+   =search-backward= based on the direction flag, and deactivates the mark
+   on success.
 
-State is maintained in two variables: - =vi-find-char-last-char=: The
-last searched character (for repeats) - =vi-find-char-forward=: Current
-search direction (buffer-local)
+State is maintained in two variables:
+- =vi-find-char-last-char=: the last searched character (global, for repeats)
+- =vi-find-char-forward=: current search direction (buffer-local)
 
 ** Requirements
 - GNU Emacs 29.x or later
@@ -136,9 +160,6 @@ search direction (buffer-local)
 ** License
 GNU General Public License v3.0 or later. See the file header for
 details.
-
-** Author
-Victor Ren [[mailto:victorhge@gmail.com][victorhge@gmail.com]]
 
 ** Contributing
 This is a personal project, but suggestions and bug reports are welcome.
