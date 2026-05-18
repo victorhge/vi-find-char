@@ -128,7 +128,7 @@
     (goto-char (point-min))
     (setq vi-find-char-last-char ?a)
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?.)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-forward-key) 0))))
       (call-interactively 'vi-find-char-go-forward))
     (should (= (char-before (point)) ?a))
     (should (= (point) 2))))  ; First 'a' (at position 1, point after is 2)
@@ -140,7 +140,7 @@
     (goto-char (point-max))
     (setq vi-find-char-last-char ?c)
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?,)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
       (call-interactively 'vi-find-char-go-backword))
     (should (= (char-after (point)) ?c))
     (should (= (point) 6))))  ; Second 'c'
@@ -152,7 +152,7 @@
     (goto-char (point-min))
     (setq vi-find-char-last-char nil)
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?.)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-forward-key) 0))))
       (call-interactively 'vi-find-char-go-forward))
     ;; Should not error, just show message
     (should (= (point) (point-min)))))
@@ -169,7 +169,7 @@
     (should (= (point) 3))
     ;; Now repeat backward with C-,
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?,)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
       (call-interactively 'vi-find-char-go-forward))
     (should (= (point) 2))))  ; Backward to 'b' at position 2
 
@@ -180,7 +180,7 @@
     (goto-char 4)  ; Between 'c' and 'a'
     (setq vi-find-char-last-char ?a)
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?.)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-forward-key) 0))))
       (call-interactively 'vi-find-char-go-backword))
     (should (= (point) 5))))  ; Forward to second 'a'
 
@@ -191,7 +191,7 @@
     (goto-char 4)  ; Between 'c' and 'a'
     (setq vi-find-char-last-char ?c)
     (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) (event-convert-list '(control ?,)))))
+               (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
       (call-interactively 'vi-find-char-go-forward))
     (should (= (point) 3))))  ; Backward to first 'c'
 
@@ -324,6 +324,86 @@
       (call-interactively 'vi-find-char-go-forward))
     (should-not mark-active)
     (should (= (point) 7))))
+
+;;; 9. Configurable Keybinding Tests
+
+(ert-deftest vi-find-char-test-set-forward-key-binds-new-key ()
+  "Test that setting vi-find-char-forward-key installs the new global binding."
+  (let ((original vi-find-char-forward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-forward-key "M-]")
+          (should (eq (keymap-lookup nil "M-]") 'vi-find-char-go-forward)))
+      (customize-set-variable 'vi-find-char-forward-key original))))
+
+(ert-deftest vi-find-char-test-set-forward-key-unbinds-old-key ()
+  "Test that setting vi-find-char-forward-key removes the old global binding."
+  (let ((original vi-find-char-forward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-forward-key "M-]")
+          (should-not (eq (keymap-lookup nil original) 'vi-find-char-go-forward)))
+      (customize-set-variable 'vi-find-char-forward-key original))))
+
+(ert-deftest vi-find-char-test-set-backward-key-binds-new-key ()
+  "Test that setting vi-find-char-backward-key installs the new global binding."
+  (let ((original vi-find-char-backward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-backward-key "M-[")
+          (should (eq (keymap-lookup nil "M-[") 'vi-find-char-go-backword)))
+      (customize-set-variable 'vi-find-char-backward-key original))))
+
+(ert-deftest vi-find-char-test-set-backward-key-unbinds-old-key ()
+  "Test that setting vi-find-char-backward-key removes the old global binding."
+  (let ((original vi-find-char-backward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-backward-key "M-[")
+          (should-not (eq (keymap-lookup nil original) 'vi-find-char-go-backword)))
+      (customize-set-variable 'vi-find-char-backward-key original))))
+
+(ert-deftest vi-find-char-test-repeat-uses-custom-forward-key ()
+  "Test that repeat detection uses the configured forward key, not hardcoded C-."
+  (let ((original vi-find-char-forward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-forward-key "M-]")
+          (with-temp-buffer
+            (insert "abcabc")
+            (goto-char (point-min))
+            (setq vi-find-char-last-char ?a)
+            (cl-letf (((symbol-function 'read-key)
+                       (lambda (&rest _) (aref (key-parse vi-find-char-forward-key) 0))))
+              (call-interactively 'vi-find-char-go-forward))
+            (should (= (point) 2))))
+      (customize-set-variable 'vi-find-char-forward-key original))))
+
+(ert-deftest vi-find-char-test-repeat-uses-custom-backward-key ()
+  "Test that repeat detection uses the configured backward key, not hardcoded C-,"
+  (let ((original vi-find-char-backward-key))
+    (unwind-protect
+        (progn
+          (customize-set-variable 'vi-find-char-backward-key "M-[")
+          (with-temp-buffer
+            (insert "abcabc")
+            (goto-char (point-max))
+            (setq vi-find-char-last-char ?c)
+            (cl-letf (((symbol-function 'read-key)
+                       (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
+              (call-interactively 'vi-find-char-go-backword))
+            (should (= (point) 6))))
+      (customize-set-variable 'vi-find-char-backward-key original))))
+
+(ert-deftest vi-find-char-test-set-key-rejects-multi-event-sequence ()
+  "Test that multi-event key sequences are rejected with user-error."
+  (let ((original vi-find-char-forward-key))
+    (unwind-protect
+        (should-error
+         (customize-set-variable 'vi-find-char-forward-key "C-c .")
+         :type 'user-error)
+      ;; Restore in case set partially succeeded
+      (setq vi-find-char-forward-key original))))
 
 (provide 'vi-find-char-tests)
 ;;; vi-find-char-tests.el ends here
