@@ -88,10 +88,9 @@
 (defun vi-find-char-search (char)
   "Search forward or backward for CHAR based on `vi-find-char-forward'."
   (setq vi-find-char-last-char char)
-  (if (if vi-find-char-forward
-          (search-forward (string char) nil t)
-        (search-backward (string char) nil t))
-      (deactivate-mark)
+  (unless (if vi-find-char-forward
+              (search-forward (string char) nil t)
+            (search-backward (string char) nil t))
     (message "Character '%c' not found" char)))
 
 (defun vi-find-char--read-and-search (direction prompt boundary-check boundary-error)

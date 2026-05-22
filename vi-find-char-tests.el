@@ -274,58 +274,94 @@
       (goto-char (point-min))
       (should (= vi-find-char-last-char saved-char)))))
 
-;;; 7. Mark Deactivation Tests
+;;; 7. Mark Behavior Tests
 
-(ert-deftest vi-find-char-test-mark-deactivated-on-success ()
-  "Test that mark is deactivated after successful search."
+(ert-deftest vi-find-char-test-no-region-mark-not-activated ()
+  "Test that a search without an active region does not activate the mark."
   (with-temp-buffer
     (transient-mark-mode 1)
     (insert "hello world")
     (goto-char (point-min))
-    (push-mark (point) t t)  ; Set and activate mark
-    (forward-char 3)
-    (should mark-active)
-    (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) ?w)))
-      (call-interactively 'vi-find-char-go-forward))
-    (should-not mark-active)))  ; Mark should be deactivated
-
-;;; 8. Mark Popup Tests
-
-(ert-deftest vi-find-char-test-mark-active-state ()
-  "Test that mark-active is nil after successful search."
-  (with-temp-buffer
-    (transient-mark-mode 1)
-    (insert "hello world")
-    (goto-char (point-min))
-    (set-mark (point))
-    (forward-char 3)
-    (activate-mark)
-    (should mark-active)
+    (deactivate-mark)
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?w)))
       (call-interactively 'vi-find-char-go-forward))
     (should-not mark-active)))
 
+;;; 8. Active Region Tests (isearch-style extension)
+
+(ert-deftest vi-find-char-test-active-region-preserved-on-success ()
+  "Test that an active region is preserved (not deactivated) after a successful search."
+  (with-temp-buffer
+    (transient-mark-mode 1)
+    (insert "hello world")
+    (goto-char (point-min))
+    (push-mark (point) t t)
+    (forward-char 3)
+    (should mark-active)
+    (cl-letf (((symbol-function 'read-key)
+               (lambda (&rest _) ?w)))
+      (call-interactively 'vi-find-char-go-forward))
+    (should mark-active)))
+
 (ert-deftest vi-find-char-test-transient-mark-mode-behavior ()
-  "Test behavior with transient-mark-mode active."
+  "Test that an active region extends to the found character."
   (with-temp-buffer
     (transient-mark-mode 1)
     (insert "abcdefg")
     (goto-char (point-min))
-    (push-mark (point) t t)  ; Set and activate mark
+    (push-mark (point) t t)
     (forward-char 2)
     (should mark-active)
     (should (= (region-beginning) 1))
     (should (= (region-end) 3))
-    ;; Search should deactivate mark
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?f)))
       (call-interactively 'vi-find-char-go-forward))
-    (should-not mark-active)
-    (should (= (point) 7))))
+    (should mark-active)
+    (should (= (point) 7))
+    (should (= (region-beginning) 1))
+    (should (= (region-end) 7))))
 
-;;; 9. Configurable Keybinding Tests
+;;; 9. Active Region Tests
+
+(ert-deftest vi-find-char-test-active-region-extends-on-forward-search ()
+  "Test that an active region extends to the found character on forward search."
+  (with-temp-buffer
+    (transient-mark-mode 1)
+    (insert "hello world")
+    (goto-char 1)
+    (push-mark (point) t t)
+    (forward-char 3)
+    (should mark-active)
+    (should (= (region-beginning) 1))
+    (should (= (region-end) 4))
+    (cl-letf (((symbol-function 'read-key)
+               (lambda (&rest _) ?w)))
+      (call-interactively 'vi-find-char-go-forward))
+    (should mark-active)
+    (should (= (region-beginning) 1))
+    (should (= (region-end) 8))))
+
+(ert-deftest vi-find-char-test-active-region-extends-on-backward-search ()
+  "Test that an active region extends to the found character on backward search."
+  (with-temp-buffer
+    (transient-mark-mode 1)
+    (insert "hello world")
+    (goto-char 9)
+    (push-mark (point) t t)
+    (backward-char 3)
+    (should mark-active)
+    (should (= (region-beginning) 6))
+    (should (= (region-end) 9))
+    (cl-letf (((symbol-function 'read-key)
+               (lambda (&rest _) ?e)))
+      (call-interactively 'vi-find-char-go-backword))
+    (should mark-active)
+    (should (= (region-beginning) 2))
+    (should (= (region-end) 9))))
+
+;;; 10. Configurable Keybinding Tests
 
 (ert-deftest vi-find-char-test-set-forward-key-binds-new-key ()
   "Test that setting vi-find-char-forward-key installs the new global binding."

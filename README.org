@@ -101,8 +101,9 @@ The package uses a two-layer architecture:
    - Any other character triggers a new search for that character
    - =C-g= cancels (handled via =condition-case=)
 2. *Search core* (=vi-find-char-search=) performs =search-forward= or
-   =search-backward= based on the direction flag, and deactivates the mark
-   on success.
+   =search-backward= based on the direction flag.  If a region is active,
+   it extends to the found character (isearch-style); otherwise point
+   simply moves.
 
 State is maintained in two variables:
 - =vi-find-char-last-char=: the last searched character (global, for repeats)
