@@ -27,10 +27,13 @@
 
 ;;; Commentary:
 
-;; Vi Find Char is analogous to the 'f' command in Vi, moving point to the
-;; next occurrence of a character.  Bound by default to C-.  (forward) and
-;; C-, (backward).  Customize via `vi-find-char-forward-key' and
-;; `vi-find-char-backward-key', or use M-x customize-group RET vi-find-char.
+;; `vi-find-char' is analogous to the 'f' command in Vi, moving point to the next
+;; occurrence of a character, with just two keystrokes: the trigger key plus the
+;; target character.
+;;
+;; Bound by default to C-.  (forward) and C-, (backward).  Customize via
+;; `vi-find-char-forward-key' and `vi-find-char-backward-key', or use
+;; M-x customize-group RET vi-find-char.
 ;;
 ;; After pressing the forward or backward key, you will be prompted for a
 ;; character in the minibuffer.  Type any character to search for it.

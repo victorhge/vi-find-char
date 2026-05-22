@@ -8,7 +8,7 @@
 
 ;;; Commentary:
 
-;; Unit tests for vi-find-char using ERT (Emacs Lisp Regression Testing).
+;; Unit tests for `vi-find-char' using ERT (Emacs Lisp Regression Testing).
 
 ;;; Code:
 

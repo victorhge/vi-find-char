@@ -1,14 +1,11 @@
 * vi-find-char
-A lightweight Emacs package that emulates Vi's =f= command for quick
-character navigation.
+This is a Emacs package that emulates Vi's =f= command for quick character
+navigation, with two keystrokes.
 
-** Overview
-=vi-find-char= provides a fast way to jump to the next or previous
-occurrence of any character in your buffer. Press the forward key (default
-=C-.=) or backward key (default =C-,=), type a character, and point jumps
-immediately.  Press the same key again to continue searching in that
-direction without being prompted again.  Both keys are configurable; see
-the Customization section.
+Press the forward key (default =C-.=) or backward key (default =C-,=), type a
+character, and point jumps immediately.  Press the same key again to continue
+searching in that direction without being prompted again.  Both keys are
+configurable; see the Customization section.
 
 ** Features
 - *Two keystrokes*: Jump to target character with two keystrokes
@@ -33,49 +30,6 @@ the Customization section.
 (use-package vi-find-char
   :load-path "path/to/vi-find-char")
 #+end_src
-
-** Usage
-The examples below use the default keys (=C-.= for forward, =C-,= for backward).
-
-*** Basic Search
-- Press =C-.= to search forward for a character
-- At the prompt "Find forward:", type any character
-- Point jumps to the next occurrence of that character
-- Press =C-g= to cancel at any time
-
-*** Backward Search
-- Press =C-,= to search backward for a character
-- At the prompt "Find backward:", type any character
-- Point jumps to the previous occurrence of that character
-
-*** Repeat Search
-- Press the forward or backward key to bring up the prompt
-- At the prompt, press the forward or backward key again to repeat:
-  - Forward key repeats the last search forward
-  - Backward key repeats the last search backward
-- You can alternate between forward and backward seamlessly
-- Plain =.= and =,= characters can be searched for normally (when those
-  are not your configured keys)
-
-*** Examples
-#+begin_example
-Text: "The quick brown fox jumps over the lazy dog"
-      ^
-      (point is here)
-
-1. Press C-.
-2. Type 'o'
-   → Point moves to "brown f[o]x"
-
-3. Press C-. (brings up prompt), then press C-. again to repeat
-   → Point moves to "f[o]x jumps"
-
-4. Press C-. (brings up prompt), then press C-, to repeat backward
-   → Point moves back to "brown f[o]x"
-
-5. To search for a period: Press C-., then type '.'
-   → Searches for the '.' character in the text
-#+end_example
 
 ** Customization
 *** Custom Keybindings
