@@ -15,7 +15,7 @@
 (require 'ert)
 (require 'vi-find-char)
 
-;;; 1. Basic Search Tests
+;;; Basic Search Tests
 
 (ert-deftest vi-find-char-test-forward-search-found ()
   "Test forward search finds character."
@@ -72,7 +72,7 @@
       (call-interactively 'vi-find-char-go-forward))
     (should (= vi-find-char-last-char ?w))))
 
-;;; 2. Adjacent Character Tests
+;;; Adjacent Character Tests
 
 (ert-deftest vi-find-char-test-forward-point-just-before-target ()
   "Test forward search when point is immediately before the target character."
@@ -96,7 +96,7 @@
     (should (= (char-after (point)) ?h))
     (should (= (point) 1))))
 
-;;; 3. Search for Special Characters
+;;; Search for Special Characters
 (ert-deftest vi-find-char-test-search-for-dot ()
   "Test searching for plain dot character."
   (with-temp-buffer
@@ -119,7 +119,7 @@
     (should (= (char-before (point)) ?,))
     (should (= (point) 5))))
 
-;;; 4. Repeat Tests
+;;; Repeat Tests
 
 (ert-deftest vi-find-char-test-repeat-forward-with-ctrl-dot ()
   "Test repeat forward with C-. key event."
@@ -195,7 +195,7 @@
       (call-interactively 'vi-find-char-go-forward))
     (should (= (point) 3))))  ; Backward to first 'c'
 
-;;; 5. Boundary Tests
+;;; Boundary Tests
 
 (ert-deftest vi-find-char-test-forward-at-eob ()
   "Test forward search at end of buffer signals error."
@@ -235,7 +235,7 @@
     (should (= (point) 1))
     (should (= (char-after (point)) ?h))))
 
-;;; 6. State Tests
+;;; State Tests
 
 (ert-deftest vi-find-char-test-forward-sets-direction-flag ()
   "Test that forward command sets direction flag to t."
@@ -274,7 +274,7 @@
       (goto-char (point-min))
       (should (= vi-find-char-last-char saved-char)))))
 
-;;; 7. Mark Behavior Tests
+;;; Mark Behavior Tests
 
 (ert-deftest vi-find-char-test-no-region-mark-not-activated ()
   "Test that a search without an active region does not activate the mark."
@@ -288,7 +288,7 @@
       (call-interactively 'vi-find-char-go-forward))
     (should-not mark-active)))
 
-;;; 8. Active Region Tests (isearch-style extension)
+;;; Active Region Tests (isearch-style extension)
 
 (ert-deftest vi-find-char-test-active-region-preserved-on-success ()
   "Test that an active region is preserved (not deactivated) after a successful search."
@@ -323,7 +323,7 @@
     (should (= (region-beginning) 1))
     (should (= (region-end) 7))))
 
-;;; 9. Active Region Tests
+;;; Active Region Tests
 
 (ert-deftest vi-find-char-test-active-region-extends-on-forward-search ()
   "Test that an active region extends to the found character on forward search."
@@ -361,7 +361,7 @@
     (should (= (region-beginning) 2))
     (should (= (region-end) 9))))
 
-;;; 10. Configurable Keybinding Tests
+;;; Configurable Keybinding Tests
 
 (ert-deftest vi-find-char-test-set-forward-key-binds-new-key ()
   "Test that setting vi-find-char-forward-key installs the new global binding."
