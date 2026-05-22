@@ -5,8 +5,7 @@
 ;; Author: Victor Ren <victorhge@gmail.com>
 ;; Keywords: navigation convenience vi
 ;; Version: 0.1
-;; X-URL:
-;;
+;; X-URL: https://github.com/victorhge/vi-find-char
 ;; Compatibility: GNU Emacs: 29.x
 
 ;; This file is not part of GNU Emacs, but it is distributed under
@@ -44,7 +43,7 @@
 
 ;;; Code:
 
-(defvar vi-find-char-last-char nil
+(defvar-local vi-find-char-last-char nil
   "Last character searched for, used for repeat searches.")
 
 (defvar-local vi-find-char-forward t
@@ -85,7 +84,7 @@
   :set #'vi-find-char--set-backward-key
   :group 'vi-find-char)
 
-(defun vi-find-char-search (char)
+(defun vi-find-char--search (char)
   "Search forward or backward for CHAR based on `vi-find-char-forward'."
   (setq vi-find-char-last-char char)
   (unless (if vi-find-char-forward
@@ -109,16 +108,16 @@ BOUNDARY-ERROR is signaled if at boundary."
           (if vi-find-char-last-char
               (progn
                 (setq vi-find-char-forward t)
-                (vi-find-char-search vi-find-char-last-char))
+                (vi-find-char--search vi-find-char-last-char))
             (message "No previous character to repeat")))
          ((equal key bwd-event)
           (if vi-find-char-last-char
               (progn
                 (setq vi-find-char-forward nil)
-                (vi-find-char-search vi-find-char-last-char))
+                (vi-find-char--search vi-find-char-last-char))
             (message "No previous character to repeat")))
          ((characterp key)
-          (vi-find-char-search key))
+          (vi-find-char--search key))
          (t (message "Invalid key"))))
     (quit nil)))
 
