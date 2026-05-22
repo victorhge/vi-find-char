@@ -3,7 +3,7 @@
 ;; Copyright (C) 2025 Victor Ren
 
 ;; Author: Victor Ren <victorhge@gmail.com>
-;; Keywords: occurrence region simultaneous refactoring
+;; Keywords: navigation convenience vi
 ;; Version: 0.1
 ;; X-URL:
 ;;
@@ -71,7 +71,7 @@
   (when (boundp sym)
     (keymap-global-unset (symbol-value sym) t))
   (set sym new-key)
-  (keymap-global-set new-key #'vi-find-char-go-backword))
+  (keymap-global-set new-key #'vi-find-char-go-backward))
 
 (defcustom vi-find-char-forward-key "C-."
   "Key sequence to trigger forward character search."
@@ -130,7 +130,7 @@ At the prompt, press `vi-find-char-forward-key' or
   (interactive)
   (vi-find-char--read-and-search t "Find forward: " #'eobp 'end-of-buffer))
 
-(defun vi-find-char-go-backword ()
+(defun vi-find-char-go-backward ()
   "Search backward for a character.  Prompt for character input.
 At the prompt, press `vi-find-char-forward-key' or
 `vi-find-char-backward-key' to repeat the last search."

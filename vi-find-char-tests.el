@@ -46,7 +46,7 @@
     (goto-char (point-max))
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?o)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (= (char-after (point)) ?o))
     (should (= (point) 8))))
 
@@ -57,7 +57,7 @@
     (goto-char (point-max))
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?z)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     ;; Point should not move
     (should (= (point) (point-max)))))
 
@@ -92,7 +92,7 @@
     (goto-char 2)  ; Point just after 'h' (char-before is ?h)
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?h)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (= (char-after (point)) ?h))
     (should (= (point) 1))))
 
@@ -141,7 +141,7 @@
     (setq vi-find-char-last-char ?c)
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (= (char-after (point)) ?c))
     (should (= (point) 6))))  ; Second 'c'
 
@@ -181,7 +181,7 @@
     (setq vi-find-char-last-char ?a)
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) (aref (key-parse vi-find-char-forward-key) 0))))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (= (point) 5))))  ; Forward to second 'a'
 
 (ert-deftest vi-find-char-test-repeat-backward-from-forward-prompt ()
@@ -210,7 +210,7 @@
   (with-temp-buffer
     (insert "hello")
     (goto-char (point-min))
-    (should-error (call-interactively 'vi-find-char-go-backword)
+    (should-error (call-interactively 'vi-find-char-go-backward)
                   :type 'beginning-of-buffer)))
 
 (ert-deftest vi-find-char-test-forward-search-to-end ()
@@ -231,7 +231,7 @@
     (goto-char (point-max))
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?h)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (= (point) 1))
     (should (= (char-after (point)) ?h))))
 
@@ -256,7 +256,7 @@
     (setq vi-find-char-forward t)
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?e)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should (eq vi-find-char-forward nil))))
 
 (ert-deftest vi-find-char-test-last-char-persists ()
@@ -356,7 +356,7 @@
     (should (= (region-end) 9))
     (cl-letf (((symbol-function 'read-key)
                (lambda (&rest _) ?e)))
-      (call-interactively 'vi-find-char-go-backword))
+      (call-interactively 'vi-find-char-go-backward))
     (should mark-active)
     (should (= (region-beginning) 2))
     (should (= (region-end) 9))))
@@ -387,7 +387,7 @@
     (unwind-protect
         (progn
           (customize-set-variable 'vi-find-char-backward-key "M-[")
-          (should (eq (keymap-lookup nil "M-[") 'vi-find-char-go-backword)))
+          (should (eq (keymap-lookup nil "M-[") 'vi-find-char-go-backward)))
       (customize-set-variable 'vi-find-char-backward-key original))))
 
 (ert-deftest vi-find-char-test-set-backward-key-unbinds-old-key ()
@@ -396,7 +396,7 @@
     (unwind-protect
         (progn
           (customize-set-variable 'vi-find-char-backward-key "M-[")
-          (should-not (eq (keymap-lookup nil original) 'vi-find-char-go-backword)))
+          (should-not (eq (keymap-lookup nil original) 'vi-find-char-go-backward)))
       (customize-set-variable 'vi-find-char-backward-key original))))
 
 (ert-deftest vi-find-char-test-repeat-uses-custom-forward-key ()
@@ -427,7 +427,7 @@
             (setq vi-find-char-last-char ?c)
             (cl-letf (((symbol-function 'read-key)
                        (lambda (&rest _) (aref (key-parse vi-find-char-backward-key) 0))))
-              (call-interactively 'vi-find-char-go-backword))
+              (call-interactively 'vi-find-char-go-backward))
             (should (= (point) 6))))
       (customize-set-variable 'vi-find-char-backward-key original))))
 

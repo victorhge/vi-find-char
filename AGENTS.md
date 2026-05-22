@@ -27,7 +27,7 @@ emacs --batch --eval "(checkdoc-file \"vi-find-char.el\")"
 
 The package has two layers:
 
-1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backword`) — bound globally to keys controlled by `vi-find-char-forward-key` and `vi-find-char-backward-key` (`defcustom`, default `C-.` and `C-,`). They set `vi-find-char-forward` and prompt for input using `read-key`. The prompt accepts:
+1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backward`) — bound globally to keys controlled by `vi-find-char-forward-key` and `vi-find-char-backward-key` (`defcustom`, default `C-.` and `C-,`). They set `vi-find-char-forward` and prompt for input using `read-key`. The prompt accepts:
    - Regular characters (including `.` and `,`): search for that character
    - forward key (`vi-find-char-forward-key`): repeat last search forward
    - backward key (`vi-find-char-backward-key`): repeat last search backward

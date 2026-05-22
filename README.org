@@ -95,7 +95,7 @@ Suggested pairs to evaluate against your own setup:
 ** Implementation Details
 The package uses a two-layer architecture:
 
-1. *Entry commands* (=vi-find-char-go-forward=, =vi-find-char-go-backword=)
+1. *Entry commands* (=vi-find-char-go-forward=, =vi-find-char-go-backward=)
    prompt for input using =read-key=.  At the prompt:
    - Pressing the configured forward or backward key repeats the last search
    - Any other character triggers a new search for that character
