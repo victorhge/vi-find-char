@@ -121,7 +121,7 @@ BOUNDARY-ERROR is signaled if at boundary."
          (t (message "Invalid key"))))
     (quit nil)))
 
-
+;;;###autoload
 (defun vi-find-char-go-forward ()
   "Search forward for a character.  Prompt for character input.
 At the prompt, press `vi-find-char-forward-key' or
@@ -129,6 +129,7 @@ At the prompt, press `vi-find-char-forward-key' or
   (interactive)
   (vi-find-char--read-and-search t "Find forward: " #'eobp 'end-of-buffer))
 
+;;;###autoload
 (defun vi-find-char-go-backward ()
   "Search backward for a character.  Prompt for character input.
 At the prompt, press `vi-find-char-forward-key' or
