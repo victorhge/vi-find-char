@@ -441,5 +441,15 @@
       ;; Restore in case set partially succeeded
       (setq vi-find-char-forward-key original))))
 
+;;; Visual Feedback Configuration Tests
+
+(ert-deftest vi-find-char-test-flash-duration-default ()
+  "Test that flash duration defaults to 0.5."
+  (should (equal vi-find-char-flash-duration 0.5)))
+
+(ert-deftest vi-find-char-test-flash-lines-default ()
+  "Test that flash lines defaults to 0."
+  (should (equal vi-find-char-flash-lines 0)))
+
 (provide 'vi-find-char-tests)
 ;;; vi-find-char-tests.el ends here

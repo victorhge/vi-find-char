@@ -72,6 +72,26 @@
   (set sym new-key)
   (keymap-global-set new-key #'vi-find-char-go-backward))
 
+(defface vi-find-char-match-face
+  '((t :inherit isearch))
+  "Face for the matched character highlight."
+  :group 'vi-find-char)
+
+(defface vi-find-char-other-match-face
+  '((t :inherit lazy-highlight))
+  "Face for other occurrences of the searched character."
+  :group 'vi-find-char)
+
+(defcustom vi-find-char-flash-duration 0.5
+  "Seconds to display character search highlights before clearing."
+  :type 'float
+  :group 'vi-find-char)
+
+(defcustom vi-find-char-flash-lines 0
+  "Lines above and below the match included in the other-occurrences region."
+  :type 'integer
+  :group 'vi-find-char)
+
 (defcustom vi-find-char-forward-key "C-."
   "Key sequence to trigger forward character search."
   :type 'key
