@@ -46,9 +46,6 @@
 (defvar-local vi-find-char-last-char nil
   "Last character searched for, used for repeat searches.")
 
-(defvar-local vi-find-char-forward t
-  "Search direction: t for forward, nil for backward.")
-
 (defgroup vi-find-char nil
   "Vi-style find-character navigation."
   :group 'convenience
@@ -133,16 +130,16 @@ nil means point is before the char (search-backward)."
                     (lambda (ovs) (mapc #'delete-overlay ovs))
                     overlays)))
 
-(defun vi-find-char--search (char)
-  "Search forward or backward for CHAR based on `vi-find-char-forward'."
+(defun vi-find-char--search (char forward)
+  "Search for CHAR in direction FORWARD."
   (setq vi-find-char-last-char char)
-  (if (if vi-find-char-forward
+  (if (if forward
           (search-forward (string char) nil t)
         (search-backward (string char) nil t))
       (progn
         (message "Found '%c'" char)
         (unless (zerop vi-find-char-flash-duration)
-          (vi-find-char--flash char (point) vi-find-char-forward)))
+          (vi-find-char--flash char (point) forward)))
     (message "Character '%c' not found" char)))
 
 (defun vi-find-char--read-and-search (direction prompt boundary-check boundary-error)
@@ -151,7 +148,6 @@ PROMPT is shown to user.  BOUNDARY-CHECK is called to verify position.
 BOUNDARY-ERROR is signaled if at boundary."
   (when (funcall boundary-check)
     (signal boundary-error nil))
-  (setq vi-find-char-forward direction)
   (condition-case nil
       (let* ((fwd-event (aref (key-parse vi-find-char-forward-key) 0))
              (bwd-event (aref (key-parse vi-find-char-backward-key) 0))
@@ -159,18 +155,14 @@ BOUNDARY-ERROR is signaled if at boundary."
         (cond
          ((equal key fwd-event)
           (if vi-find-char-last-char
-              (progn
-                (setq vi-find-char-forward t)
-                (vi-find-char--search vi-find-char-last-char))
+              (vi-find-char--search vi-find-char-last-char t)
             (message "No previous character to repeat")))
          ((equal key bwd-event)
           (if vi-find-char-last-char
-              (progn
-                (setq vi-find-char-forward nil)
-                (vi-find-char--search vi-find-char-last-char))
+              (vi-find-char--search vi-find-char-last-char nil)
             (message "No previous character to repeat")))
          ((characterp key)
-          (vi-find-char--search key))
+          (vi-find-char--search key direction))
          (t (message "Invalid key"))))
     (quit nil)))
 

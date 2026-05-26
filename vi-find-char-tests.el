@@ -237,28 +237,6 @@
 
 ;;; State Tests
 
-(ert-deftest vi-find-char-test-forward-sets-direction-flag ()
-  "Test that forward command sets direction flag to t."
-  (with-temp-buffer
-    (insert "hello")
-    (goto-char (point-min))
-    (setq vi-find-char-forward nil)
-    (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) ?e)))
-      (call-interactively 'vi-find-char-go-forward))
-    (should (eq vi-find-char-forward t))))
-
-(ert-deftest vi-find-char-test-backward-sets-direction-flag ()
-  "Test that backward command sets direction flag to nil."
-  (with-temp-buffer
-    (insert "hello")
-    (goto-char (point-max))
-    (setq vi-find-char-forward t)
-    (cl-letf (((symbol-function 'read-key)
-               (lambda (&rest _) ?e)))
-      (call-interactively 'vi-find-char-go-backward))
-    (should (eq vi-find-char-forward nil))))
-
 (ert-deftest vi-find-char-test-last-char-persists ()
   "Test that last-char variable persists across calls."
   (with-temp-buffer
