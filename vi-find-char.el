@@ -142,8 +142,8 @@ nil means point is before the char (search-backward)."
           (vi-find-char--flash char (point) forward)))
     (message "Character '%c' not found" char)))
 
-(defun vi-find-char--read-and-search (direction prompt boundary-check boundary-error)
-  "Read key and search in DIRECTION.
+(defun vi-find-char--read-and-search (forward prompt boundary-check boundary-error)
+  "Read key and search in direction FORWARD.
 PROMPT is shown to user.  BOUNDARY-CHECK is called to verify position.
 BOUNDARY-ERROR is signaled if at boundary."
   (when (funcall boundary-check)
@@ -162,7 +162,7 @@ BOUNDARY-ERROR is signaled if at boundary."
               (vi-find-char--search vi-find-char-last-char nil)
             (message "No previous character to repeat")))
          ((characterp key)
-          (vi-find-char--search key direction))
+          (vi-find-char--search key forward))
          (t (message "Invalid key"))))
     (quit nil)))
 
