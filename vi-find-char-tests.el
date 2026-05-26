@@ -451,5 +451,104 @@
   "Test that flash lines defaults to 0."
   (should (equal vi-find-char-flash-lines 0)))
 
+;;; Flash / Overlay Tests
+
+(ert-deftest vi-find-char-test-flash-creates-match-overlay ()
+  "Test that forward flash creates an overlay on the matched character."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (search-forward "o")
+    (vi-find-char--flash ?o (point) t)
+    (let ((ovs (overlays-at (1- (point)))))
+      (should ovs)
+      (should (eq (overlay-get (car ovs) 'face) 'vi-find-char-match-face)))))
+
+(ert-deftest vi-find-char-test-flash-backward-creates-match-overlay ()
+  "Test that backward flash creates an overlay on the matched character."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-max))
+    (search-backward "o")
+    ;; search-backward leaves point before the char; overlay should be at point..point+1
+    (vi-find-char--flash ?o (point) nil)
+    (let ((ovs (overlays-at (point))))
+      (should ovs)
+      (should (eq (overlay-get (car ovs) 'face) 'vi-find-char-match-face)))))
+
+(ert-deftest vi-find-char-test-flash-creates-other-overlays ()
+  "Test that flash creates overlays on other occurrences of the char."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (search-forward "l")        ; lands at position 4, first 'l'
+    (vi-find-char--flash ?l (point) t)
+    ;; The second 'l' at position 5 should have an other-match overlay
+    (let ((ovs (overlays-at 4)))
+      (should ovs)
+      (should (eq (overlay-get (car ovs) 'face) 'vi-find-char-other-match-face)))))
+
+(ert-deftest vi-find-char-test-flash-no-other-overlays-when-unique ()
+  "Test that flash creates no other-match overlays when char is unique on the line."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (search-forward "w")
+    (vi-find-char--flash ?w (point) t)
+    ;; Count overlays with other-match face — should be zero
+    (let ((count 0))
+      (mapc (lambda (ov)
+              (when (eq (overlay-get ov 'face) 'vi-find-char-other-match-face)
+                (setq count (1+ count))))
+            (overlays-in (point-min) (point-max)))
+      (should (= count 0)))))
+
+(ert-deftest vi-find-char-test-flash-flash-lines-expands-region ()
+  "Test that vi-find-char-flash-lines expands the other-occurrences region."
+  (with-temp-buffer
+    (insert "aaa\nbbb\naaa")   ; 'a' on line 1 and line 3
+    ;; search forward for 'b' on line 2, then flash with flash-lines=1
+    (goto-char (point-min))
+    (search-forward "b")
+    (let ((vi-find-char-flash-lines 1))
+      (vi-find-char--flash ?a (point) t))
+    ;; 'a' chars on line 1 (positions 1,2,3) should get other-match overlays
+    (let ((ovs (overlays-at 1)))
+      (should ovs)
+      (should (eq (overlay-get (car ovs) 'face) 'vi-find-char-other-match-face)))))
+
+;;; Integration: flash called on successful search
+
+(ert-deftest vi-find-char-test-flash-disabled-when-duration-zero ()
+  "Test that no overlays are created when flash duration is zero."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (let ((vi-find-char-flash-duration 0))
+      (cl-letf (((symbol-function 'read-key) (lambda (&rest _) ?o)))
+        (call-interactively 'vi-find-char-go-forward)))
+    (should (= (length (overlays-in (point-min) (point-max))) 0))))
+
+(ert-deftest vi-find-char-test-search-calls-flash-on-success ()
+  "Test that a successful search creates a match overlay."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (cl-letf (((symbol-function 'read-key) (lambda (&rest _) ?o)))
+      (call-interactively 'vi-find-char-go-forward))
+    ;; point is after 'o' at position 6; overlay should be at 5-6
+    (let ((ovs (overlays-at 5)))
+      (should ovs)
+      (should (eq (overlay-get (car ovs) 'face) 'vi-find-char-match-face)))))
+
+(ert-deftest vi-find-char-test-search-no-flash-on-failure ()
+  "Test that a failed search creates no overlays."
+  (with-temp-buffer
+    (insert "hello world")
+    (goto-char (point-min))
+    (cl-letf (((symbol-function 'read-key) (lambda (&rest _) ?z)))
+      (call-interactively 'vi-find-char-go-forward))
+    (should (= (length (overlays-in (point-min) (point-max))) 0))))
+
 (provide 'vi-find-char-tests)
 ;;; vi-find-char-tests.el ends here

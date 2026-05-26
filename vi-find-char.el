@@ -104,12 +104,45 @@
   :set #'vi-find-char--set-backward-key
   :group 'vi-find-char)
 
+(defun vi-find-char--flash (char match-pos forward)
+  "Flash CHAR at MATCH-POS and other occurrences in the surrounding region.
+FORWARD non-nil means point is after the char (search-forward);
+nil means point is before the char (search-backward)."
+  (let* ((overlays '())
+         ;; search-forward leaves point after char; search-backward before it
+         (char-start (if forward (1- match-pos) match-pos))
+         (char-end   (if forward match-pos (1+ match-pos))))
+    (save-excursion
+      (goto-char match-pos)
+      (forward-line (- vi-find-char-flash-lines))
+      (let ((region-start (line-beginning-position)))
+        (goto-char match-pos)
+        (forward-line vi-find-char-flash-lines)
+        (let ((region-end (line-end-position))
+              (char-str (string char)))
+          (let ((ov (make-overlay char-start char-end)))
+            (overlay-put ov 'face 'vi-find-char-match-face)
+            (push ov overlays))
+          (goto-char region-start)
+          (while (search-forward char-str region-end t)
+            (unless (= (1- (point)) char-start)
+              (let ((ov (make-overlay (1- (point)) (point))))
+                (overlay-put ov 'face 'vi-find-char-other-match-face)
+                (push ov overlays)))))))
+    (run-with-timer vi-find-char-flash-duration nil
+                    (lambda (ovs) (mapc #'delete-overlay ovs))
+                    overlays)))
+
 (defun vi-find-char--search (char)
   "Search forward or backward for CHAR based on `vi-find-char-forward'."
   (setq vi-find-char-last-char char)
-  (unless (if vi-find-char-forward
-              (search-forward (string char) nil t)
-            (search-backward (string char) nil t))
+  (if (if vi-find-char-forward
+          (search-forward (string char) nil t)
+        (search-backward (string char) nil t))
+      (progn
+        (message "Found '%c'" char)
+        (unless (zerop vi-find-char-flash-duration)
+          (vi-find-char--flash char (point) vi-find-char-forward)))
     (message "Character '%c' not found" char)))
 
 (defun vi-find-char--read-and-search (direction prompt boundary-check boundary-error)
