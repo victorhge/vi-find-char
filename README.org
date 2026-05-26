@@ -13,8 +13,9 @@ configurable; see the Customization section.
   backward search; customize via =vi-find-char-forward-key= and
   =vi-find-char-backward-key=
 - *Smart repeat*: Press the forward or backward key again to repeat the last search
-- *Direction switching*: Alternate between forward and backward
-  seamlessly
+- *Direction switching*: Alternate between forward and backward seamlessly
+- *Visual flash*: Matched character and other occurrences on the line briefly
+  flash after each jump; duration and region are configurable
 
 ** Installation
 *** Manual Installation
@@ -32,6 +33,32 @@ configurable; see the Customization section.
 #+end_src
 
 ** Customization
+*** Visual Flash
+After each successful jump, the matched character flashes with =vi-find-char-match-face=
+(inherits =isearch=) and other occurrences of that character on the same line flash
+with =vi-find-char-other-match-face= (inherits =lazy-highlight=).  A message
+is also shown in the minibuffer (e.g. =Found 'x'=).
+
+Two options control this behaviour:
+
+| Variable                      | Type    | Default | Description                                      |
+|-------------------------------+---------+---------+--------------------------------------------------|
+| =vi-find-char-flash-duration= | float   | =0.5=   | Seconds before highlights clear; =0= disables   |
+| =vi-find-char-flash-lines=    | integer | =0=     | Lines above/below the match to include           |
+
+Example — extend the flash region to 2 lines above and below, keep for 1 second:
+
+#+begin_src elisp
+(setopt vi-find-char-flash-duration 1.0)
+(setopt vi-find-char-flash-lines    2)
+#+end_src
+
+To disable the flash entirely:
+
+#+begin_src elisp
+(setopt vi-find-char-flash-duration 0)
+#+end_src
+
 *** Custom Keybindings
 If you prefer different keybindings, customize
 =vi-find-char-forward-key= and =vi-find-char-backward-key=:
@@ -100,14 +127,13 @@ The package uses a two-layer architecture:
    - Pressing the configured forward or backward key repeats the last search
    - Any other character triggers a new search for that character
    - =C-g= cancels (handled via =condition-case=)
-2. *Search core* (=vi-find-char-search=) performs =search-forward= or
-   =search-backward= based on the direction flag.  If a region is active,
-   it extends to the found character (isearch-style); otherwise point
-   simply moves.
+2. *Search core* (=vi-find-char--search=) performs =search-forward= or
+   =search-backward=.  On success it flashes the result via
+   =vi-find-char--flash= and echoes =Found 'x'=.  On failure it echoes
+   =Character 'x' not found=.
 
-State is maintained in two variables:
-- =vi-find-char-last-char=: the last searched character (global, for repeats)
-- =vi-find-char-forward=: current search direction (buffer-local)
+State is maintained in one variable:
+- =vi-find-char-last-char=: the last searched character (buffer-local, for repeats)
 
 ** Requirements
 - GNU Emacs 29.x or later

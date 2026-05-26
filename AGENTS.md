@@ -25,18 +25,20 @@ emacs --batch --eval "(checkdoc-file \"vi-find-char.el\")"
 
 ## Architecture
 
-The package has two layers:
+The package has three layers:
 
-1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backward`) — bound globally to keys controlled by `vi-find-char-forward-key` and `vi-find-char-backward-key` (`defcustom`, default `C-.` and `C-,`). They set `vi-find-char-forward` and prompt for input using `read-key`. The prompt accepts:
+1. **Entry commands** (`vi-find-char-go-forward`, `vi-find-char-go-backward`) — bound globally to keys controlled by `vi-find-char-forward-key` and `vi-find-char-backward-key` (`defcustom`, default `C-.` and `C-,`). They prompt for input using `read-key`. The prompt accepts:
    - Regular characters (including `.` and `,`): search for that character
    - forward key (`vi-find-char-forward-key`): repeat last search forward
    - backward key (`vi-find-char-backward-key`): repeat last search backward
    - `C-g`: cancel
    The `condition-case` wrapper handles cancellation gracefully.
 
-2. **Search core** (`vi-find-char-search`) — calls `search-forward`/`search-backward` based on direction, deactivates the mark on success. On failure it messages the user.
+2. **Search core** (`vi-find-char--search`) — calls `search-forward`/`search-backward` based on the `forward` parameter. On success, emits a `Found 'x'` message and calls `vi-find-char--flash`. On failure, messages the user.
 
-State is kept in two variables: `vi-find-char-last-char` (global, persists across invocations for repeat) and `vi-find-char-forward` (buffer-local, tracks direction).
+3. **Flash** (`vi-find-char--flash`) — creates overlays on the matched character (`vi-find-char-match-face`) and other occurrences within `vi-find-char-flash-lines` lines (`vi-find-char-other-match-face`), then clears them after `vi-find-char-flash-duration` seconds via `run-with-timer`. Skipped entirely when `vi-find-char-flash-duration` is zero.
+
+State is kept in one variable: `vi-find-char-last-char` (buffer-local, persists across invocations for repeat). Direction is passed explicitly as a `forward` parameter through the call stack.
 
 The repeat mechanism is triggered at the prompt: pressing the forward key repeats forward, the backward key repeats backward, allowing seamless direction switching. The repeat keys always mirror `vi-find-char-forward-key` and `vi-find-char-backward-key`.
 
